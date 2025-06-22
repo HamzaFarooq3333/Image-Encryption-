@@ -30,8 +30,8 @@ google-crc32c==1.7.1
 google-resumable-media==2.7.2
 googleapis-common-protos==1.70.0
 greenlet==3.2.2
-grpcio==1.68.1
-grpcio-status==1.62.3
+grpcio==1.68.1            # first gRPC wheel series that ships cp313
+grpcio-status==1.62.3     # last status build that still works with protobuf <5
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
@@ -60,10 +60,10 @@ numpy==1.26.2
 packaging==25.0
 pandas==2.2.3
 parso==0.8.4
-Pillow==11.2.1
+Pillow==11.2.1            # fixes the build wheel error on Python 3.13
 prompt_toolkit==3.0.51
 proto-plus==1.26.1
-protobuf==4.25.8
+protobuf==4.25.8          # <5 keeps every google-* package happy
 psutil==7.0.0
 pure_eval==0.2.3
 pyasn1==0.6.1
@@ -89,8 +89,8 @@ stack-data==0.6.3
 sympy==1.14.0
 threadpoolctl==3.6.0
 tokenizers==0.15.2
-torch==2.7.1
-torchvision==0.22.0
+torch==2.7.0              # cp313 wheels available
+torchvision==0.22.0       # explicitly requires torch==2.7.0 :contentReference[oaicite:0]{index=0}
 tornado==6.4.2
 tqdm==4.67.1
 traitlets==5.14.3
