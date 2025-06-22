@@ -1,0 +1,6 @@
+__pycache__/
+instance/
+venv/
+.vercel
+*.py[cod]
+*.db
