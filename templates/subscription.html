@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Upgrade to Pro</h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">Choose Your Payment Method</h5>
+                    
+                    <ul class="nav nav-tabs" id="paymentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#card" type="button" role="tab" aria-controls="card" aria-selected="true">Card Payment</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="cash-tab" data-bs-toggle="tab" data-bs-target="#cash" type="button" role="tab" aria-controls="cash" aria-selected="false">Cash Payment</button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-4" id="paymentTabContent">
+                        <!-- Card Payment Form -->
+                        <div class="tab-pane fade show active" id="card" role="tabpanel" aria-labelledby="card-tab">
+                            <form method="POST" action="{{ url_for('subscription') }}">
+                                <input type="hidden" name="payment_method" value="card">
+                                <input type="hidden" name="amount" value="29.99">
+                                
+                                <div class="mb-3">
+                                    <label for="card_number" class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" id="card_number" name="card_number" required>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiry" class="form-label">Expiry Date (MM/YY)</label>
+                                        <input type="text" class="form-control" id="expiry" name="expiry" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="text" class="form-control" id="cvv" name="cvv" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="billing_address" class="form-label">Billing Address</label>
+                                    <textarea class="form-control" id="billing_address" name="billing_address" rows="3" required></textarea>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Process Payment ($29.99)</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Cash Payment Form -->
+                        <div class="tab-pane fade" id="cash" role="tabpanel" aria-labelledby="cash-tab">
+                            <form method="POST" action="{{ url_for('subscription') }}">
+                                <input type="hidden" name="payment_method" value="cash">
+                                
+                                <div class="mb-3">
+                                    <label for="cash_amount" class="form-label">Amount Paid</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="cash_amount" name="amount" step="0.01" min="29.99" value="29.99" required>
+                                    </div>
+                                    <div class="form-text">Minimum payment: $29.99</div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary">Process Cash Payment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Pro Features</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Advanced embedding capabilities</li>
+                        <li><i class="fas fa-check text-success"></i> Multiple model support (CLIP and Autoencoder)</li>
+                        <li><i class="fas fa-check text-success"></i> Priority processing</li>
+                        <li><i class="fas fa-check text-success"></i> Enhanced image reconstruction</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Card number formatting
+    const cardNumber = document.getElementById('card_number');
+    cardNumber.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{4})/g, '$1 ').trim();
+        e.target.value = value;
+    });
+    
+    // Expiry date formatting
+    const expiry = document.getElementById('expiry');
+    expiry.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.slice(0,2) + '/' + value.slice(2,4);
+        }
+        e.target.value = value;
+    });
+    
+    // CVV validation
+    const cvv = document.getElementById('cvv');
+    cvv.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0,3);
+    });
+});
+</script>
+{% endblock %} 

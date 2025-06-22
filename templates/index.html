@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<style>
+.btn-gradient-index {
+    background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+    color: #fff;
+    border: none;
+    transition: box-shadow 0.2s, background 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+}
+.btn-gradient-index:hover {
+    box-shadow: 0 6px 24px rgba(96,165,250,0.18);
+    background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+    color: #fff;
+    transform: scale(1.04);
+}
+.section-header-index {
+    color: #2563eb;
+}
+</style>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8">
+        <div class="card section-card shadow-lg border-0 rounded-4">
+            <div class="card-header bg-white border-0 rounded-top-4">
+                <h5 class="mb-0 fw-bold section-header-index"><i class="fa-solid fa-code-compare text-primary me-2"></i>Image Comparison</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image1" class="form-label fw-semibold">First Image</label>
+                                <input type="file" class="form-control" id="image1" name="image1" accept="image/*" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image2" class="form-label fw-semibold">Second Image</label>
+                                <input type="file" class="form-control" id="image2" name="image2" accept="image/*" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="threshold" class="form-label fw-semibold">Similarity Threshold (%)</label>
+                        <input type="number" class="form-control" id="threshold" name="threshold" 
+                               min="0" max="100" value="80" required>
+                    </div>
+                    <button type="submit" class="btn btn-gradient-index px-4 py-2 fw-semibold">
+                        <i class="fa-solid fa-equals me-2"></i>Compare Images
+                    </button>
+                </form>
+                {% if similarity is not none %}
+                <div class="mt-4">
+                    <div class="alert {% if result == 'Similar' %}alert-success{% else %}alert-danger{% endif %} border-0 shadow-sm" style="border-radius: 1em;">
+                        <h5 class="alert-heading fw-bold section-header-index"><i class="fa-solid fa-circle-info me-2"></i>Comparison Result</h5>
+                        <p class="mb-0 file-name" title="Similarity: {{ similarity }}">Similarity: {{ similarity }}</p>
+                        <p class="mb-0 file-name" title="Result: {{ result }}">Result: {{ result }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

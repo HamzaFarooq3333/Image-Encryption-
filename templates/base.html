@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Pro</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body, .container-fluid {
+            background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 32px rgba(44,62,80,0.08), 0 1.5px 6px rgba(44,62,80,0.06);
+            border: 1.5px solid #e0e7ef;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 12px 48px rgba(44,62,80,0.13), 0 2px 8px rgba(44,62,80,0.09);
+            transform: scale(1.012);
+        }
+        .btn-gradient {
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1.5rem;
+            font-size: 1.05rem;
+            transition: box-shadow 0.2s, background 0.2s, transform 0.15s;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+        }
+        .btn-gradient:hover, .btn-outline-primary.file-process-btn:hover {
+            box-shadow: 0 6px 24px rgba(139,92,246,0.18);
+            background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+            color: #fff;
+            transform: scale(1.04);
+        }
+        .model-badge {
+            font-size: 0.85rem;
+            padding: 0.4em 0.9em;
+            border-radius: 1em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 12px rgba(143,92,255,0.13);
+            border: 1.5px solid #e0d7fa;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, #8f5cff 0%, #ff6ec4 100%);
+            color: #fff;
+            text-shadow: 0 1px 6px rgba(143,92,255,0.12);
+        }
+        .bg-gradient-clip {
+            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+            color: #fff;
+        }
+        .bg-gradient-autoencoder {
+            background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
+            color: #fff;
+        }
+        .bg-gradient-unknown {
+            background: linear-gradient(90deg, #6b7280 0%, #d1d5db 100%);
+            color: #fff;
+        }
+        .file-name {
+            font-weight: 600;
+            color: #6d28d9;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+            background: rgba(99,102,241,0.07);
+            border-radius: 0.5em;
+            padding: 0.1em 0.7em;
+        }
+        .file-item {
+            background: #f8fafc;
+            border: 1.5px solid #e0e7ef;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+            cursor: pointer;
+        }
+        .file-item:hover {
+            background: #e0e7ff;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+            transform: scale(1.01);
+        }
+        .img-fluid {
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+            border: 2.5px solid #e0e7ef;
+        }
+        .list-group-item {
+            border-radius: 10px !important;
+            margin-bottom: 0.7rem;
+            border: 1.5px solid #e0e7ef;
+            background: #f8fafc;
+        }
+        .alert {
+            margin-bottom: 1.2rem;
+            border-radius: 1rem;
+            border: 1.5px solid #e0e7ef;
+            font-size: 1.02rem;
+        }
+        .form-control, .form-select {
+            border-radius: 0.7rem;
+            border: 1.5px solid #e0e7ef;
+            font-size: 1.05rem;
+            padding: 0.6rem 1rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 0.2rem rgba(99,102,241,0.13);
+        }
+        @media (max-width: 768px) {
+            .file-name { max-width: 80px; }
+            .main-content { margin-left: 0; padding: 18px 6px 6px 6px; }
+            .sidebar { width: 0; padding: 0; }
+            .sidebar.show { width: 250px; padding: 48px 0 0; }
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: 2px 0 24px 0 rgba(44,62,80,0.07);
+            background: linear-gradient(180deg, #8f5cff 0%, #6b21a8 100%);
+            width: 250px;
+            transition: all 0.3s;
+            border-top-right-radius: 2rem;
+            border-bottom-right-radius: 2rem;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-size: 1.08rem;
+            letter-spacing: 0.02em;
+            margin: 0.3rem 0;
+            padding: 0.85rem 1.2rem;
+            border-radius: 0.8rem;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+            color: #fff;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.13);
+            color: #fff;
+        }
+
+        .sidebar .nav-link.active {
+            box-shadow: 0 4px 24px 0 rgba(44,62,80,0.10);
+            color: #fff !important;
+            transform: scale(1.04);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0.7rem;
+            font-size: 1.15em;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 36px 32px 32px 32px;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        .navbar {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            .main-content, .navbar {
+                margin-left: 0;
+            }
+            .sidebar.show {
+                width: 250px;
+                padding: 48px 0 0;
+            }
+        }
+
+        .user-info {
+            padding: 1.2rem 1.2rem 0.7rem 1.2rem;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.13);
+            margin-bottom: 1.2rem;
+        }
+
+        .user-info .username {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-info .pro-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 0.25rem 0.7rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        /* Professional Sidebar Colors */
+        .sidebar-home { background: linear-gradient(180deg, #2563eb 0%, #60a5fa 100%) !important; }
+        .sidebar-gallery { background: linear-gradient(180deg, #10b981 0%, #06b6d4 100%) !important; }
+        .sidebar-sample { background: linear-gradient(180deg, #fb923c 0%, #f59e42 100%) !important; }
+        .sidebar-binary { background: linear-gradient(180deg, #7c3aed 0%, #6366f1 100%) !important; }
+        .sidebar-reverse { background: linear-gradient(180deg, #0ea5e9 0%, #6366f1 100%) !important; }
+        .sidebar-subscription { background: linear-gradient(180deg, #f43f5e 0%, #fca5a5 100%) !important; }
+        .sidebar-logout { background: linear-gradient(180deg, #f43f5e 0%, #fca5a5 100%) !important; }
+
+        .flash-message {
+            max-width: 480px;
+            margin: 0 auto 1.5rem auto;
+            border-radius: 1.2rem;
+            box-shadow: 0 4px 24px 0 rgba(44,62,80,0.10);
+            font-size: 1.08rem;
+            font-weight: 500;
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .flash-message .fa-solid {
+            font-size: 1.3em;
+            margin-right: 0.7rem;
+        }
+        .flash-message-success { background: linear-gradient(90deg, #bbf7d0 0%, #22d3ee 100%); color: #065f46; border: none; }
+        .flash-message-danger { background: linear-gradient(90deg, #fee2e2 0%, #f43f5e 100%); color: #991b1b; border: none; }
+        .flash-message-info { background: linear-gradient(90deg, #dbeafe 0%, #6366f1 100%); color: #1e3a8a; border: none; }
+        .flash-message-warning { background: linear-gradient(90deg, #fef9c3 0%, #fbbf24 100%); color: #92400e; border: none; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    {% if session.get('user_id') %}
+    <nav class="sidebar 
+        {% if request.endpoint == 'index' %}sidebar-home
+        {% elif request.endpoint == 'gallery' %}sidebar-gallery
+        {% elif request.endpoint == 'sample' %}sidebar-sample
+        {% elif request.endpoint == 'binary' %}sidebar-binary
+        {% elif request.endpoint == 'reverse' %}sidebar-reverse
+        {% elif request.endpoint == 'subscription' %}sidebar-subscription
+        {% elif request.endpoint == 'logout' %}sidebar-logout
+        {% endif %}">
+        <div class="sidebar-sticky">
+            <div class="user-info">
+                <div class="username">
+                    <i class="fas fa-user"></i> {{ session.get('username') }}
+                    {% if session.get('is_pro') %}
+                        <span class="pro-badge">PRO</span>
+                    {% endif %}
+                </div>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link nav-home {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-gallery {% if request.endpoint == 'gallery' %}active{% endif %}" href="{{ url_for('gallery') }}">
+                        <i class="fas fa-images"></i> Gallery
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-sample {% if request.endpoint == 'sample' %}active{% endif %}" href="{{ url_for('sample') }}">
+                        <i class="fas fa-upload"></i> Sample
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-binary {% if request.endpoint == 'binary' %}active{% endif %}" href="{{ url_for('binary') }}">
+                        <i class="fas fa-file-code"></i> Binary
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-reverse {% if request.endpoint == 'reverse' %}active{% endif %}" href="{{ url_for('reverse') }}">
+                        <i class="fas fa-undo"></i> Reverse
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-ai-chatbot {% if request.endpoint == 'ai_chatbot' %}active{% endif %}" href="{{ url_for('ai_chatbot') }}">
+                        <i class="fas fa-robot"></i> AI Chat Bot
+                    </a>
+                </li>
+                {% if not session.get('is_pro') %}
+                <li class="nav-item">
+                    <a class="nav-link nav-subscription" href="{{ url_for('subscription') }}">
+                        <i class="fas fa-crown"></i> Upgrade to Pro
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item mt-auto">
+                    <a class="nav-link nav-logout" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" id="sidebarToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-image"></i> Image Processing Pro
+            </a>
+            {% if not session.get('user_id') %}
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('login') }}">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a class="nav-link" href="{{ url_for('signup') }}">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages-wrapper" style="margin-top: 2.2rem;">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-message-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
+                        {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>{% endif %}
+                        {% if category == 'error' or category == 'danger' %}<i class="fa-solid fa-circle-xmark"></i>{% endif %}
+                        {% if category == 'info' %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+                        {% if category == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>{% endif %}
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        // Toggle sidebar on mobile
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

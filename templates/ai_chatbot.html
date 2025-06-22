@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>AI Chat Bot</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="analyze">
+                <div class="form-group">
+                    <label for="user_text">Enter your prompt:</label>
+                    <input type="text" class="form-control" id="user_text" name="user_text" placeholder="Describe the image you want..." value="{{ query }}">
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Analyze Gallery</button>
+            </form>
+            <form method="POST" action="{{ url_for('ai_chatbot') }}">
+                <input type="hidden" name="user_text" value="{{ query }}">
+                <input type="hidden" name="action" value="next">
+                <button type="submit" class="btn btn-secondary mt-2 ms-2">Next</button>
+            </form>
+            {% if matched_results %}
+                <div class="mt-4">
+                    <h4>Matched Images:</h4>
+                    <div class="row">
+                        {% for result in matched_results %}
+                            <div class="col-md-4">
+                                <img src="{{ url_for('static', filename='ai_matched/user_' + user_id|string + '/' + result.filename) }}" class="img-fluid mb-2" alt="Matched image">
+                                <div class="mb-2"><b>Original Name:</b> {{ result.original_filename }}</div>
+                                <form method="POST" action="{{ url_for('convert_to_binary_ai') }}">
+                                    <input type="hidden" name="filename" value="{{ result.filename }}">
+                                    <input type="hidden" name="original_filename" value="{{ result.original_filename }}">
+                                    {% if session.get('is_pro') %}
+                                        <select name="model_type" class="form-select form-select-sm mt-1 mb-1">
+                                            <option value="clip">CLIP</option>
+                                            <option value="autoencoder">AUTOENCODER</option>
+                                        </select>
+                                    {% else %}
+                                        <input type="hidden" name="model_type" value="clip">
+                                    {% endif %}
+                                    <button type="submit" class="btn btn-sm btn-primary mt-1">Convert to Binary</button>
+                                </form>
+                                <a href="{{ url_for('static', filename='ai_matched/user_' + user_id|string + '/' + result.filename) }}" download class="btn btn-sm btn-success mt-1">Download</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info mt-4">No images matched your input.</div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Queries</h5>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#historyModal">History</button>
+                </div>
+                <div class="card-body">
+                    {% if chat_history %}
+                        <div class="chat-history">
+                            {% for chat in chat_history %}
+                                <div class="chat-entry border-bottom pb-2 mb-2">
+                                    <p class="mb-1"><strong>Query:</strong> {{ chat.query }}</p>
+                                    <p class="mb-1"><small class="text-muted">{{ chat.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+                                    <p class="mb-0"><small>Matched: {{ chat.matched_files|length }} images</small></p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No chat history yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historyModalLabel">History by Date</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="history-date-form" class="mb-3">
+          <label for="history-date" class="form-label">Select Date:</label>
+          <input type="date" id="history-date" name="date" class="form-control" required>
+          <button type="submit" class="btn btn-primary mt-2">Show History</button>
+        </form>
+        <div id="history-results"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('history-date-form');
+    const resultsDiv = document.getElementById('history-results');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('history-date').value;
+        resultsDiv.innerHTML = '<div class="text-center">Loading...</div>';
+        fetch('/get_history_by_date', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'date=' + encodeURIComponent(date)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultsDiv.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                return;
+            }
+            if (!data.history.length) {
+                resultsDiv.innerHTML = '<div class="alert alert-info">No history for this date.</div>';
+                return;
+            }
+            let html = '<ul class="list-group">';
+            data.history.forEach(item => {
+                if (item.type === 'query') {
+                    html += `<li class="list-group-item">
+                        <b>Query:</b> ${item.query}<br>
+                        <b>Matched Images:</b> ${item.matched_images.length}<br>
+                        <small class="text-muted">${item.timestamp}</small>
+                    </li>`;
+                } else if (item.type === 'conversion') {
+                    html += `<li class="list-group-item">
+                        <b>Converted:</b> ${item.image_name}<br>
+                        <b>Model:</b> ${item.model_type.toUpperCase()}<br>
+                        <small class="text-muted">${item.timestamp}</small>
+                    </li>`;
+                }
+            });
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
+        })
+        .catch(() => {
+            resultsDiv.innerHTML = '<div class="alert alert-danger">Failed to fetch history.</div>';
+        });
+    });
+});
+</script>
+{% endblock %} 

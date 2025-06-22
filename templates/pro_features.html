@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Pro Features</h2>
+    
+    <div class="row">
+        <!-- CLIP Model Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">CLIP Model</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted">Semantic Embedding</h6>
+                    <p class="card-text">
+                        The CLIP model provides semantic understanding of images, allowing for:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Semantic similarity matching</li>
+                        <li><i class="fas fa-check text-success"></i> Cross-modal understanding</li>
+                        <li><i class="fas fa-check text-success"></i> High-level feature extraction</li>
+                    </ul>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i> Note: CLIP embeddings cannot be directly decoded back to images.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Autoencoder Model Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Autoencoder Model</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-3 text-muted">Pixel-Preserving Embedding</h6>
+                    <p class="card-text">
+                        The Autoencoder model provides pixel-level preservation, enabling:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Direct image reconstruction</li>
+                        <li><i class="fas fa-check text-success"></i> Pixel-level accuracy</li>
+                        <li><i class="fas fa-check text-success"></i> Lossless compression</li>
+                    </ul>
+                    <div class="alert alert-success mt-3">
+                        <i class="fas fa-check-circle"></i> Full image reconstruction capability available.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">How to Use Pro Features</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-upload fa-3x text-primary"></i>
+                                <h6 class="mt-2">1. Upload Image</h6>
+                                <p class="small text-muted">Choose your image in the Sample section</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-cogs fa-3x text-primary"></i>
+                                <h6 class="mt-2">2. Select Model</h6>
+                                <p class="small text-muted">Choose between CLIP or Autoencoder</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-magic fa-3x text-primary"></i>
+                                <h6 class="mt-2">3. Process</h6>
+                                <p class="small text-muted">Generate embeddings or reconstruct images</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('binary') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-play"></i> Start Using Pro Features
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

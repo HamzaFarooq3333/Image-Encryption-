@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Reverse Image{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<div class="container-fluid mt-5" style="font-family: 'Inter', sans-serif;">
+    <h2 class="text-center mb-4 fw-bold" style="letter-spacing: 1px;">Reverse Binary to Image <i class="fa-solid fa-rotate-left text-primary"></i></h2>
+    
+    <!-- Upload Section - Top Center -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body py-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="binaryfile" class="form-label fw-semibold">Upload Binary File</label>
+                            <input type="file" class="form-control form-control-lg" id="binaryfile" name="binaryfile" accept=".txt" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-gradient px-4 py-2 fw-semibold">
+                                <i class="fa-solid fa-upload me-2"></i>Process Binary
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Binary Files Section - Left Side -->
+        <div class="col-md-4">
+            {% if binary_files %}
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fw-bold"><i class="fa-solid fa-database text-warning me-2"></i>Your Binary Files</h5>
+                    <form method="POST" id="process-binary-form">
+                        <div class="list-group">
+                            {% for file in binary_files %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center file-item rounded-3 mb-2 px-3 py-2">
+                                <div class="d-flex align-items-center">
+                                    <input type="radio" name="selected_file" value="{{ file.filename }}" id="file_{{ loop.index }}" class="form-check-input me-2" {% if loop.first %}checked{% endif %}>
+                                    <span class="file-name" style="max-width: 180px; word-break: break-all; white-space: normal; display: inline-block; vertical-align: middle;">{{ file.original_filename }}</span>
+                                    <span class="model-badge bg-gradient-{{ file.model_type }} ms-2">
+                                        {% if file.model_type == 'clip' %}CLIP{% elif file.model_type == 'autoencoder' %}Autoencoder{% else %}Unknown{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3 d-flex justify-content-center gap-2 flex-wrap" style="width: 100%; padding-left: 12px;">
+                            <button type="submit" class="btn btn-gradient px-4 py-2 fw-semibold flex-fill" style="min-width: 140px; max-width: 100%;">
+                                <i class="fa-solid fa-play me-2"></i>Process Binary
+                            </button>
+                            <a id="downloadSelectedBtn" href="#" class="btn btn-gradient px-4 py-2 fw-semibold d-flex align-items-center flex-fill" style="min-width: 140px; max-width: 100%;" download>
+                                <i class="fa-solid fa-download me-2"></i>Download Selected
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Results Section - Right Side -->
+        <div class="col-md-8">
+            {% if error %}
+            <div class="alert alert-danger shadow-sm rounded-3">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>{{ error }}
+            </div>
+            {% endif %}
+            
+            <div class="card shadow border-0 rounded-4 mb-4">
+                <div class="card-body">
+                    {% if clip_embedding %}
+                        <h4 class="fw-bold text-center mb-3" style="color:#2563eb;"><i class="fa-solid fa-brain text-primary me-2"></i>CLIP Embedding</h4>
+                        <div class="d-flex align-items-center mb-3 justify-content-center">
+                            <span class="badge model-badge bg-gradient-clip me-2">CLIP</span>
+                            <small class="text-muted">Model: CLIP</small>
+                        </div>
+                        <div class="alert alert-info shadow-sm">
+                            <i class="fa-solid fa-circle-info me-2"></i>{{ clip_comparison }}
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted">This embedding can be used for image comparison and similarity search.</p>
+                        </div>
+                        <div class="text-center mt-4">
+                            <img src="https://raw.githubusercontent.com/openai/CLIP/main/clip.png" class="img-fluid rounded-4 border border-4 shadow-lg" alt="CLIP Embedding" style="max-height: 350px; background: #f8f9fa; margin-bottom: 18px;">
+                            <div class="mt-2 text-muted">No image can be reconstructed from CLIP embeddings, but you can use this for comparison.</div>
+                        </div>
+                    {% elif image_path %}
+                        <h4 class="fw-bold text-center mb-3" style="color:#2563eb;"><i class="fa-solid fa-image text-success me-2"></i>Reconstructed Image</h4>
+                        {% if selected_model_type %}
+                        <div class="d-flex justify-content-center mb-3">
+                            <span class="badge model-badge {% if selected_model_type == 'clip' %}bg-gradient-clip{% elif selected_model_type == 'autoencoder' %}bg-gradient-autoencoder{% else %}bg-gradient-unknown{% endif %} p-3" style="font-size:1.2rem; min-width:200px; border-radius:1.5rem;">
+                                <i class="fa-solid fa-microchip me-2"></i>
+                                MODEL USED: {{ selected_model_type|upper }}
+                            </span>
+                        </div>
+                        <div class="alert alert-info text-center mb-3" style="font-size:1.08rem; border-left:6px solid #2563eb; background:#e0f7fa; color:#134e6f; box-shadow:0 2px 8px rgba(44,62,80,0.07);">
+                            <i class="fa-solid fa-microchip"></i>
+                            This image was encoded using the <b>{{ selected_model_type|upper }}</b> model.
+                        </div>
+                        {% endif %}
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename=image_path.replace('static/', '')) }}" class="reconstructed-image-preview border border-4" alt="Reconstructed Image">
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-gradient px-4 py-2 fw-semibold" onclick="showReconstructedDownloadDialog('{{ reconstructed_filename }}')">
+                                    <i class="fa-solid fa-download me-2"></i>Download Reconstructed Image
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center mt-4">
+                            <img src="https://via.placeholder.com/320x220?text=No+Image+Selected" class="img-fluid rounded-4 border border-2 shadow-lg" alt="No image selected" style="max-height: 220px; background: #f8f9fa;">
+                            <div class="mt-2 text-muted">No binary file processed yet.</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Reconstructed Modal -->
+<div class="modal fade" id="reconstructedDownloadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Download Reconstructed Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reconstructedDownloadForm" method="GET">
+                    <div class="mb-3">
+                        <label for="reconstructed_custom_filename" class="form-label">Filename</label>
+                        <input type="text" class="form-control" id="reconstructed_custom_filename" name="custom_filename" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReconstructedDownload()">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+body, .container-fluid {
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+}
+.card {
+    background: #fff;
+    border-radius: 1.5rem;
+}
+.btn-gradient {
+    background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+    color: #fff;
+    border: none;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+.btn-gradient:hover, .btn-outline-primary.file-process-btn:hover {
+    box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+    background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+    color: #fff;
+}
+.model-badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.9em;
+    border-radius: 1em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+}
+.bg-gradient-clip {
+    background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+    color: #fff;
+}
+.bg-gradient-autoencoder {
+    background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
+    color: #fff;
+}
+.bg-gradient-unknown {
+    background: linear-gradient(90deg, #6b7280 0%, #d1d5db 100%);
+    color: #fff;
+}
+.file-item {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    transition: background 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.file-item:hover {
+    background: #e0e7ff;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
+.file-name {
+    font-weight: 500;
+    color: #374151;
+}
+.file-process-btn {
+    transition: background 0.2s, color 0.2s;
+}
+.reconstructed-image-preview {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background: #fff;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    border-radius: 1.2em;
+    max-width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Download selected binary file
+const processForm = document.getElementById('process-binary-form');
+const downloadBtn = document.getElementById('downloadSelectedBtn');
+if (processForm && downloadBtn) {
+    processForm.addEventListener('change', function() {
+        const selected = processForm.querySelector('input[name="selected_file"]:checked');
+        if (selected) {
+            downloadBtn.href = `/download_binary/${selected.value}`;
+            downloadBtn.classList.remove('disabled');
+        } else {
+            downloadBtn.href = '#';
+            downloadBtn.classList.add('disabled');
+        }
+    });
+    // Initialize on page load
+    const selected = processForm.querySelector('input[name="selected_file"]:checked');
+    if (selected) {
+        downloadBtn.href = `/download_binary/${selected.value}`;
+        downloadBtn.classList.remove('disabled');
+    } else {
+        downloadBtn.href = '#';
+        downloadBtn.classList.add('disabled');
+    }
+}
+
+function showReconstructedDownloadDialog(filename) {
+    const modal = new bootstrap.Modal(document.getElementById('reconstructedDownloadModal'));
+    const input = document.getElementById('reconstructed_custom_filename');
+    input.value = filename.replace(/\.[^/.]+$/, '') + '.png';
+    window._reconstructedDownloadUrl = `/download_reconstructed/${filename}`;
+    modal.show();
+}
+function submitReconstructedDownload() {
+    const customFilename = document.getElementById('reconstructed_custom_filename').value;
+    window.location.href = `${window._reconstructedDownloadUrl}?custom_filename=${encodeURIComponent(customFilename)}`;
+}
+</script>
+{% endblock %}

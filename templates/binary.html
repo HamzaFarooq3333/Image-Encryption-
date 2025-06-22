@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Binary Conversion{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">Convert Image to Binary</h5>
+                        <button class="btn btn-gradient" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Your Binary Files</h5>
+                    {% if binary_files %}
+                        <div class="list-group">
+                            {% for file in binary_files %}
+                                <div class="list-group-item file-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="file-name">{{ file.original_filename }}</span>
+                                            <span class="model-badge bg-gradient-{{ file.model_type }}">
+                                                {% if file.model_type == 'clip' %}CLIP{% elif file.model_type == 'autoencoder' %}Autoencoder{% else %}Unknown{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    onclick="showDownloadDialog('{{ file.filename }}', '{{ file.original_filename }}')">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                            <form method="POST" action="{{ url_for('delete_binary') }}" class="d-inline">
+                                                <input type="hidden" name="filename" value="{{ file.filename }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No binary files found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Image for Binary Conversion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modal_image" class="form-label">Select Image</label>
+                        <input type="file" class="form-control" id="modal_image" name="image" accept="image/*" required onchange="previewImage(event)">
+                    </div>
+                    <div class="mb-3" id="imagePreviewContainer" style="display:none;">
+                        <label class="form-label">Preview</label>
+                        <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid rounded border" style="max-height:200px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_model_type" class="form-label">Select Model</label>
+                        <select class="form-select" id="modal_model_type" name="model_type">
+                            <option value="clip" {% if model_type == 'clip' %}selected{% endif %}>CLIP</option>
+                            {% if session.get('is_pro') %}
+                            <option value="autoencoder" {% if model_type == 'autoencoder' %}selected{% endif %}>Autoencoder</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-gradient">Convert to Binary</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Download Dialog Modal -->
+<div class="modal fade" id="downloadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Download Binary File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="downloadForm" method="GET">
+                    <div class="mb-3">
+                        <label for="custom_filename" class="form-label">Filename</label>
+                        <input type="text" class="form-control" id="custom_filename" name="custom_filename" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitDownload()">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentDownloadUrl = '';
+
+function showDownloadDialog(filename, originalFilename) {
+    const modal = new bootstrap.Modal(document.getElementById('downloadModal'));
+    const input = document.getElementById('custom_filename');
+    input.value = originalFilename.replace(/\.[^/.]+$/, '') + '.txt';
+    currentDownloadUrl = `/download_binary/${filename}`;
+    modal.show();
+}
+
+function submitDownload() {
+    const customFilename = document.getElementById('custom_filename').value;
+    window.location.href = `${currentDownloadUrl}?custom_filename=${encodeURIComponent(customFilename)}`;
+}
+
+function previewImage(event) {
+    const input = event.target;
+    const preview = document.getElementById('imagePreview');
+    const container = document.getElementById('imagePreviewContainer');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            container.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        container.style.display = 'none';
+        preview.src = '#';
+    }
+}
+</script>
+{% endblock %}
