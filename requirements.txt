@@ -30,8 +30,8 @@ google-crc32c==1.7.1
 google-resumable-media==2.7.2
 googleapis-common-protos==1.70.0
 greenlet==3.2.2
-grpcio==1.72.1
-grpcio-status==1.62.3
+grpcio==1.73.0
+grpcio-status==1.73.0
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
@@ -60,7 +60,7 @@ numpy==1.26.2
 packaging==25.0
 pandas==2.2.3
 parso==0.8.4
-Pillow==10.1.0
+Pillow==11.2.1
 prompt_toolkit==3.0.51
 proto-plus==1.26.1
 protobuf==4.25.8
