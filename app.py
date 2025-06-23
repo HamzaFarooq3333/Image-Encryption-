@@ -23,7 +23,10 @@ import easyocr
 from datetime import datetime, timedelta
 import re
 
-app = Flask(__name__)
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+template_dir = os.path.join(BASE_DIR, 'templates')
+app = Flask(__name__, template_folder=template_dir)
 app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this to a secure secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
