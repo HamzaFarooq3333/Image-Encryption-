@@ -1,0 +1,27 @@
+
+JSON
+
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "startCommand": "gunicorn main:app",
+    "overlapSeconds": 0,
+    "drainingSeconds": 0,
+    "preDeployCommand": [
+      "gunicorn main:app"
+    ],
+    "sleepApplication": false,
+    "multiRegionConfig": {
+      "asia-southeast1-eqsg3a": {
+        "numReplicas": 1
+      }
+    },
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
